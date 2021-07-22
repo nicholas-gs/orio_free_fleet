@@ -1,0 +1,66 @@
+<?xml version='1.0' ?>
+
+<launch>
+  <arg name="use_ignition" default="0"/>
+  <arg name="gazebo_version" default="11"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="failover_mode" default="false"/>
+  <arg name="world_name" default="office_door"/>
+  <arg name="no_simulation" default="false"/>
+  <arg name="headless" default="false"/>
+
+  <!-- Common launch -->
+  <include file="$(find-pkg-share orio_magni_worlds)/worlds/common.launch.xml">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+    <arg name="viz_config_file" value ="$(find-pkg-share orio_magni_worlds)/rviz/10_20.rviz"/>
+    <arg name="config_file" value="$(find-pkg-share orio_magni_worlds)/worlds/$(var world_name)/maps/$(var world_name).building.yaml"/>
+  </include>
+
+  <!-- Simulation launch -->
+  <include unless="$(var no_simulation)" file="$(find-pkg-share orio_magni_worlds)/worlds/simulation.launch.xml">
+    <arg name="map_name" value="$(var world_name)" />
+    <arg name="map_package" value="orio_magni_worlds" />
+    <arg name="use_ignition" value="$(var use_ignition)" />
+    <arg name="gazebo_version" value="$(var gazebo_version)" />
+  </include>
+
+  <!-- TinyRobot fleet adapter and robot state aggregator needed for the TinyRobot slotcar_plugin -->
+  <group>
+    <let name="fleet_name" value="tinyRobot"/>
+    <include file="$(find-pkg-share orio_magni_worlds)/adapters/tinyRobot_adapter.launch.xml">
+      <arg name="fleet_name" value="$(var fleet_name)"/>
+      <arg name="use_sim_time" value="$(var use_sim_time)"/>
+      <arg name="nav_graph_file" value="$(find-pkg-share orio_magni_worlds)/maps/$(var world_name)/nav_graphs/0.yaml" />
+    </include>
+    <include file="$(find-pkg-share rmf_fleet_adapter)/robot_state_aggregator.launch.xml">
+      <arg name="robot_prefix" value="tinyRobot"/>
+      <arg name="fleet_name" value="$(var fleet_name)"/>
+      <arg name="use_sim_time" value="$(var use_sim_time)"/>
+      <arg name="failover_mode" value="$(var failover_mode)"/>
+    </include>
+  </group>
+
+  <!-- Door Adapter -->
+  <group>
+    <node pkg="orio_door_adapter" exec="orio_door_adapter" name="orio_door_adapter" output="screen">
+      <param name="door_names" value="Door1" value-sep="," />
+    </node>
+  </group>
+
+  <!-- Door Manager -->
+  <group>
+     <node pkg="orio_door_manager" exec="orio_door_manager" name="orio_door_manager_door1" output="screen">
+        <param name="door_name" value="Door1"/>
+        <!-- ROS2 params -->
+        <param name="door_request_topic" value="/door_requests"/>
+        <param name="door_state_topic" value="/orio_door_states"/>
+        <param name="publish_state_period" value="1000"/>
+        <!-- HTTP/REST params -->
+        <param name="base_url" value="https://10.8.0.4:8080"/>
+        <param name="request_timeout_ms" value="1000"/>
+        <param name="ssl_verification" value="false"/>
+        <param from="$(find-pkg-share orio_magni_worlds)/worlds/office_door/credentials/http_auth.yaml"/>
+    </node>
+  </group>
+
+</launch>

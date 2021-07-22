@@ -1,0 +1,58 @@
+crowd_sim:
+  agent_groups:
+    - {agents_name: [], agents_number: 0, group_id: 0, profile_selector: external_agent, state_selector: external_static, x: 0, y: 0}
+  agent_profiles:
+    - {ORCA_tau: 1, ORCA_tauObst: 0.4, class: 1, max_accel: 0, max_angle_vel: 0, max_neighbors: 10, max_speed: 0, name: external_agent, neighbor_dist: 5, obstacle_set: 1, pref_speed: 0, r: 0.25}
+  enable: 0
+  goal_sets: []
+  model_types: []
+  obstacle_set: {class: 1, file_name: L1_navmesh.nav, type: nav_mesh}
+  states:
+    - {final: 1, goal_set: -1, name: external_static, navmesh_file_name: ""}
+  transitions: []
+  update_time_step: 0.1
+levels:
+  L1:
+    doors:
+      - [9, 10, {motion_axis: [1, start], motion_degrees: [3, 90], motion_direction: [2, 1], name: [1, Door1], plugin: [1, normal], right_left_ratio: [3, 1], type: [1, double_sliding]}]
+    drawing:
+      filename: office_door.png
+    elevation: 0
+    flattened_x_offset: 0
+    flattened_y_offset: 0
+    floors:
+      - parameters: {texture_name: [1, blue_linoleum], texture_rotation: [3, 0], texture_scale: [3, 1]}
+        vertices: [0, 1, 2, 3, 4]
+    lanes:
+      - [5, 6, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [6, 7, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+      - [7, 8, {bidirectional: [4, true], demo_mock_floor_name: [1, ""], demo_mock_lift_name: [1, ""], graph_idx: [2, 0], orientation: [1, ""]}]
+    layers:
+      {}
+    measurements:
+      - [11, 12, {distance: [3, 6]}]
+      - [13, 14, {distance: [3, 10]}]
+    vertices:
+      - [115.203, 131.203, 0, ""]
+      - [103.511, 327.421, 0, ""]
+      - [212.399, 306.959, 0, ""]
+      - [374.27, 230.226, 0, ""]
+      - [297.902, 63.239, 0, ""]
+      - [140.912, 227.959, 0, 1_a, {is_charger: [4, true], is_parking_spot: [4, false]}]
+      - [199.602, 199.33, 0, 1_b, {is_parking_spot: [4, true]}]
+      - [230.855, 185.254, 0, 1_c, {is_parking_spot: [4, true]}]
+      - [299.804, 152.092, 0, 1_d]
+      - [204.444, 170.615, 0, ""]
+      - [227.42, 214.449, 0, ""]
+      - [101.092, 132.35, 0, ""]
+      - [88.874, 327.833, 0, ""]
+      - [112.965, 117.454, 0, ""]
+      - [289.52, 50.765, 0, ""]
+    walls:
+      - [0, 1, {alpha: [3, 1], texture_name: [1, default]}]
+      - [1, 2, {alpha: [3, 1], texture_name: [1, default]}]
+      - [2, 3, {alpha: [3, 1], texture_name: [1, default]}]
+      - [3, 4, {alpha: [3, 1], texture_name: [1, default]}]
+      - [4, 0, {alpha: [3, 1], texture_name: [1, default]}]
+lifts: {}
+name: building
