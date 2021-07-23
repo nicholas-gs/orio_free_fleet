@@ -1,0 +1,73 @@
+<?xml version='1.0' ?>
+
+<launch>
+  <arg name="gazebo_version" default="11"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="failover_mode" default="false"/>
+  <arg name="world_name" default="office_lift"/>
+  <arg name="no_simulation" default="false"/>
+  <arg name="headless" default="false"/>
+
+  <!-- Common launch -->
+  <include file="$(find-pkg-share orio_magni_worlds)/worlds/common.launch.xml">
+    <arg name="use_sim_time" value="$(var use_sim_time)"/>
+    <arg name="viz_config_file" value ="$(find-pkg-share orio_magni_worlds)/rviz/10_20.rviz"/>
+    <arg name="config_file" value="$(find-pkg-share orio_magni_worlds)/worlds/$(var world_name)/maps/$(var world_name).building.yaml"/>
+  </include>
+
+  <!-- Simulation launch -->
+  <include unless="$(var no_simulation)" file="$(find-pkg-share orio_magni_worlds)/worlds/simulation.launch.xml">
+    <arg name="map_name" value="$(var world_name)" />
+    <arg name="map_package" value="orio_magni_worlds" />
+    <arg name="gazebo_version" value="$(var gazebo_version)" />
+  </include>
+
+  <!-- TinyRobot fleet adapter and robot state aggregator needed for the TinyRobot slotcar_plugin -->
+  <group>
+    <let name="fleet_name" value="tinyRobot"/>
+    <include file="$(find-pkg-share orio_magni_worlds)/adapters/tinyRobot_adapter.launch.xml">
+      <arg name="fleet_name" value="$(var fleet_name)"/>
+      <arg name="use_sim_time" value="$(var use_sim_time)"/>
+      <arg name="nav_graph_file" value="$(find-pkg-share orio_magni_worlds)/maps/$(var world_name)/nav_graphs/0.yaml" />
+    </include>
+    <include file="$(find-pkg-share rmf_fleet_adapter)/robot_state_aggregator.launch.xml">
+      <arg name="robot_prefix" value="tinyRobot"/>
+      <arg name="fleet_name" value="$(var fleet_name)"/>
+      <arg name="use_sim_time" value="$(var use_sim_time)"/>
+      <arg name="failover_mode" value="$(var failover_mode)"/>
+    </include>
+  </group>
+
+  <!-- Door Supervisor -->
+  <group>
+    <node pkg="rmf_fleet_adapter" exec="door_supervisor"/>
+  </group>
+
+  <!-- Lift Adapter -->
+  <group>
+    <node pkg="orio_lift_adapter" exec="orio_lift_adapter" name="orio_lift_adapter" output="screen">
+      <param name="lift_names" value="Lift1" value-sep="," />
+    </node>
+  </group>
+
+  <!-- Lift Manager -->
+  <group>
+     <node pkg="orio_lift_manager" exec="orio_lift_manager" name="orio_lift_manager_lift1" output="screen">
+        <param name="lift_name" value="Lift1"/>
+        <!-- ROS2 params -->
+        <param name="lift_request_topic" value="/lift_requests"/>
+        <param name="lift_state_topic" value="/lift_states"/>
+        <param name="publish_state_period" value="1000"/>
+        <!-- HTTP/REST params -->
+        <param name="base_url" value="https://10.8.0.4:8080"/>
+        <param name="request_timeout_ms" value="1000"/>
+        <param name="pulse_timing_ms" value="500"/>
+        <param name="ssl_verification" value="false"/>
+        <param from="$(find-pkg-share orio_magni_worlds)/worlds/office_lift/credentials/http_auth.yaml"/>
+        <param name="available_floors" value="L1,L2" value-sep=","/>
+        <!-- Remap the lift state topic since the simulation also publishes its state on here  -->
+        <remap from="/lift_states" to="/orio_lift_states" />
+    </node>
+  </group>
+
+</launch>
